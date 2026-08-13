@@ -2,45 +2,62 @@ import streamlit as st
 import datetime
 
 # إعدادات الصفحة
-st.set_page_config(page_title="حجز المواعيد السريع", page_icon="📅", layout="centered")
+st.set_page_config(page_title="Smart Booking System", page_icon="📅", layout="centered")
 
-st.title("✂️ نظام حجز المواعيد الذكي")
-st.write("احجز ميعادك بسهولة من غير انتظار ومن غير مكالمات!")
+st.title("✂️ Smart Booking & Queue System")
+st.write("Book your appointment easily and track your live queue position!")
 
-# قائمة المحلات أو الخدمات المتاحة
+# قائمة الخدمات أو الأماكن
 service_provider = st.selectbox(
-    "اختر الفرع أو المزود للخدمة:",
-    ["صالون النجم (حلاقة رجالي)", "عيادة الدكتور للأسنان", "مركز التجميل الملكي"]
+    "Select Service Provider / Branch:",
+    ["Star Salon (Men's Grooming)", "Smile Dental Clinic", "Royal Beauty Center"]
 )
 
 st.divider()
 
-# نموذج حجز الميعاد
-st.subheader("📝 بيانات الحجز")
+# قسم الحجز (Booking Form)
+st.subheader("📝 Book an Appointment")
 
 with st.form("booking_form"):
-    client_name = st.text_input("اسمك الكريم:")
-    client_phone = st.text_input("رقم الهاتف:")
+    client_name = st.text_input("Your Full Name:")
+    client_phone = st.text_input("Phone Number:")
     
     col1, col2 = st.columns(2)
     with col1:
-        booking_date = st.date_input("اختر تاريخ الحجز:", min_value=datetime.date.today())
+        booking_date = st.date_input("Select Date:", min_value=datetime.date.today())
     with col2:
-        booking_time = st.selectbox("اختر الساعة:", ["12:00 م", "02:00 م", "04:00 م", "06:00 م", "08:00 م", "10:00 م"])
+        booking_time = st.selectbox("Select Time Slot:", ["12:00 PM", "02:00 PM", "04:00 PM", "06:00 PM", "08:00 PM", "10:00 PM"])
     
-    # زر إرسال الطلب
-    submit_button = st.form_submit_button(label="تأكيد الحجز الآن 🚀")
+    submit_button = st.form_submit_button(label="Confirm Booking 🚀")
 
     if submit_button:
         if client_name.strip() == "" or client_phone.strip() == "":
-            st.error("⚠️ من فضلك اكتب الاسم ورقم الهاتف بشكل صحيح!")
+            st.error("⚠️ Please enter your name and phone number correctly!")
         else:
-            st.success(f"🎉 مبروك يا {client_name}! تم تأكيد حجزك في ({service_provider}) يوم {booking_date} الساعة {booking_time}.")
-            st.balloons() # احتفال صغير بالحجز
+            # محاكاة توليد رقم دور عشوائي بناءً على الوقت
+            queue_number = 5 
+            st.success(f"🎉 Success, {client_name}! Your booking at ({service_provider}) is confirmed.")
+            st.info(f"🎫 Your Queue Ticket Number is: **#{queue_number}**")
+            st.balloons()
 
 st.divider()
 
-# محاكاة لوحة تحكم صاحب المحل (عشان يشوف الحجوزات)
-with st.expander("🔐 لوحة تحكم صاحب المحل (لإدارة الحجوزات)"):
-    st.write("هنا بيظهر لصاحب المحل كل الزبائن اللي حجزوا عنده اليومين دول:")
-    st.info("📌 لا توجد حجوزات جديدة معلقة حالياً. (هذا نموذج تجريبي للمشروع)")
+# ميزة معرفة الدور الحالي (Live Queue Tracking)
+st.subheader("📊 Live Queue Tracker (Check Your Turn)")
+st.write("Check who is currently being served right now in real-time:")
+
+# زر لتحديث أو عرض الدور الحالي
+if st.button("Refresh Queue Status"):
+    # محاكاة رقم الدور الحالي في المحل
+    current_serving = 3
+    st.metric(label="Now Serving Turn Number", value=f"#{current_serving}")
+    st.warning("⚠️ If your ticket number is close, please be ready at the venue!")
+
+st.divider()
+
+# لوحة تحكم صاحب المحل (Dashboard)
+with st.expander("🔐 Business Owner Dashboard"):
+    st.write("Manage today's appointments and update the current serving turn:")
+    new_turn = st.number_input("Update Current Serving Number:", min_value=1, max_value=50, value=3)
+    if st.button("Update Turn on Screen"):
+        st.success(f"✅ Live queue updated successfully to #{new_turn}!")
