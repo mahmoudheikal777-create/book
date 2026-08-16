@@ -560,74 +560,150 @@ def inject_style() -> None:
         """
         <style>
             .stApp {
+                direction: rtl;
                 background:
-                    radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 28%),
-                    linear-gradient(135deg, #0f172a 0%, #111827 42%, #1f2937 100%);
-                color: #f8fafc;
+                    radial-gradient(circle at top right, rgba(255, 255, 255, 0.55), transparent 25%),
+                    linear-gradient(160deg, #f8fafc 0%, #eef2ff 46%, #fdf2f8 100%);
+                color: #0f172a;
             }
             .block-container {
-                padding-top: 2rem;
+                padding-top: 1.5rem;
                 padding-bottom: 2rem;
-                max-width: 1150px;
+                max-width: 1200px;
             }
-            .hero-card, .glass-card {
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 22px;
-                padding: 1.2rem 1.4rem;
-                backdrop-filter: blur(10px);
-                box-shadow: 0 14px 35px rgba(15, 23, 42, 0.22);
+            section[data-testid="stSidebar"] {
+                background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+                border-left: 1px solid rgba(255, 255, 255, 0.08);
             }
-            .hero-title {
-                font-size: 2.3rem;
+            section[data-testid="stSidebar"] * {
+                color: #f8fafc !important;
+            }
+            .page-hero {
+                background: linear-gradient(135deg, #111827 0%, #1e293b 45%, #312e81 100%);
+                border-radius: 28px;
+                padding: 1.6rem 1.6rem 1.4rem;
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 24px 50px rgba(15, 23, 42, 0.16);
+                margin-bottom: 1rem;
+            }
+            .page-hero h1 {
+                margin: 0;
+                font-size: 2.15rem;
                 font-weight: 700;
-                margin-bottom: 0.45rem;
             }
-            .hero-subtitle {
-                color: #dbe4ff;
+            .page-hero p {
+                margin: 0.55rem 0 0;
+                color: #dbeafe;
+                line-height: 1.8;
+            }
+            .soft-card, .ticket-card {
+                background: rgba(255, 255, 255, 0.88);
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                border-radius: 22px;
+                padding: 1.15rem 1.2rem;
+                box-shadow: 0 16px 35px rgba(148, 163, 184, 0.14);
+            }
+            .ticket-card {
+                background: linear-gradient(135deg, #eff6ff 0%, #fdf2f8 100%);
+                border: 1px solid rgba(129, 140, 248, 0.2);
+            }
+            .section-title {
+                font-size: 1.15rem;
+                font-weight: 700;
+                margin: 0 0 0.85rem;
+                color: #0f172a;
+            }
+            .section-note {
+                color: #475569;
                 line-height: 1.7;
                 margin-bottom: 0;
             }
             .mini-stat {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.9);
+                border: 1px solid rgba(148, 163, 184, 0.18);
                 border-radius: 18px;
-                padding: 0.9rem 1rem;
-                text-align: center;
+                padding: 1rem 1.05rem;
+                box-shadow: 0 10px 24px rgba(148, 163, 184, 0.12);
             }
             .mini-stat h4 {
                 margin: 0;
-                color: #93c5fd;
-                font-size: 0.95rem;
+                color: #64748b;
+                font-size: 0.9rem;
+                font-weight: 600;
             }
             .mini-stat p {
-                margin: 0.35rem 0 0;
-                font-size: 1.35rem;
+                margin: 0.4rem 0 0;
+                font-size: 1.45rem;
                 font-weight: 700;
-                color: #ffffff;
+                color: #0f172a;
+            }
+            .branch-card {
+                background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.92));
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                border-radius: 20px;
+                padding: 1rem;
+                min-height: 210px;
+            }
+            .branch-card h4 {
+                margin: 0 0 0.45rem;
+                color: #111827;
+            }
+            .branch-card p {
+                margin: 0.2rem 0;
+                color: #475569;
+            }
+            .step-card {
+                background: rgba(255, 255, 255, 0.9);
+                border: 1px dashed rgba(99, 102, 241, 0.3);
+                border-radius: 18px;
+                padding: 0.95rem 1rem;
+                min-height: 122px;
+            }
+            .step-card h4 {
+                margin: 0 0 0.35rem;
+                color: #312e81;
+            }
+            .step-card p {
+                margin: 0;
+                color: #475569;
+                line-height: 1.7;
             }
             div[data-testid="stMetric"] {
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                padding: 0.8rem;
+                background: rgba(255, 255, 255, 0.92);
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                padding: 0.85rem;
                 border-radius: 18px;
+                box-shadow: 0 10px 24px rgba(148, 163, 184, 0.12);
             }
-            div[data-testid="stForm"], div[data-testid="stExpander"] {
-                border: 1px solid rgba(255, 255, 255, 0.12);
+            div[data-testid="stForm"], div[data-testid="stExpander"], div[data-baseweb="select"] > div {
+                border: 1px solid rgba(148, 163, 184, 0.18);
                 border-radius: 18px;
-                background: rgba(255, 255, 255, 0.06);
+                background: rgba(255, 255, 255, 0.9);
+            }
+            div[data-testid="stDataFrame"], div[data-testid="stTabs"] {
+                background: transparent;
             }
             .stButton > button, .stDownloadButton > button, .stFormSubmitButton > button {
                 border-radius: 14px;
                 border: none;
-                background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                padding: 0.55rem 1rem;
+                background: linear-gradient(135deg, #4f46e5, #ec4899);
                 color: white;
                 font-weight: 600;
             }
-            .section-label {
-                font-size: 1.15rem;
-                font-weight: 700;
-                margin: 0.25rem 0 0.7rem;
+            .subtle-badge {
+                display: inline-block;
+                padding: 0.3rem 0.7rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.12);
+                color: #e0e7ff;
+                font-size: 0.85rem;
+                margin-bottom: 0.7rem;
+            }
+            .quick-info {
+                color: #334155;
+                line-height: 1.8;
             }
         </style>
         """,
@@ -635,35 +711,42 @@ def inject_style() -> None:
     )
 
 
-def render_hero(branch_count: int, total_services: int, total_bookings: int) -> None:
+def render_page_banner(title: str, subtitle: str, badge: str) -> None:
     st.markdown(
         f"""
-        <div class="hero-card">
-            <div class="hero-title">صالونات وحجوزات بشكل احترافي</div>
-            <p class="hero-subtitle">
-                منصة موحدة لإدارة الحجز والطوابير والخدمات والموظفين في واجهة أنيقة وسريعة.
-                صممت لتناسب صالونات الحلاقة والتجميل مع قابلية التوسع لأي فرع جديد.
-            </p>
+        <div class="page-hero">
+            <div class="subtle-badge">{badge}</div>
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(
-            f'<div class="mini-stat"><h4>الفروع</h4><p>{branch_count}</p></div>',
-            unsafe_allow_html=True,
-        )
-    with col2:
-        st.markdown(
-            f'<div class="mini-stat"><h4>الخدمات</h4><p>{total_services}</p></div>',
-            unsafe_allow_html=True,
-        )
-    with col3:
-        st.markdown(
-            f'<div class="mini-stat"><h4>حجوزات اليوم</h4><p>{total_bookings}</p></div>',
-            unsafe_allow_html=True,
-        )
+
+
+def render_stat_cards(items: list[tuple[str, str]]) -> None:
+    columns = st.columns(len(items))
+    for col, (label, value) in zip(columns, items):
+        with col:
+            st.markdown(
+                f'<div class="mini-stat"><h4>{label}</h4><p>{value}</p></div>',
+                unsafe_allow_html=True,
+            )
+
+
+def render_hero(branch_count: int, total_services: int, total_bookings: int) -> None:
+    render_page_banner(
+        "منصة حجز صالونات سهلة وواضحة",
+        "واجهة عربية عملية تنقل العميل من اختيار الفرع والخدمة إلى تأكيد الحجز ومتابعة دوره بدون تعقيد.",
+        "تجربة استخدام جديدة",
+    )
+    render_stat_cards(
+        [
+            ("عدد الفروع", str(branch_count)),
+            ("الخدمات المتاحة", str(total_services)),
+            ("حجوزات اليوم", str(total_bookings)),
+        ]
+    )
 
 
 def render_home() -> None:
@@ -675,33 +758,81 @@ def render_home() -> None:
     render_hero(len(branches), len(services), summary["total_bookings"])
     st.write("")
 
-    left, right = st.columns([1.35, 1])
+    left, right = st.columns([1.2, 1])
     with left:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown('<div class="section-label">لماذا هذه النسخة أقوى؟</div>', unsafe_allow_html=True)
-        st.write(
+        st.markdown(
             """
-            - حفظ دائم للحجوزات والطابور داخل قاعدة بيانات `SQLite`.
-            - توزيع ذكي للعميل على أول موظف متاح حسب الخدمة والموعد.
-            - لوحة متابعة مباشرة للفروع مع تحديث رقم الدور الحالي.
-            - تصميم أنظف يصلح كنقطة انطلاق لتطبيق تجاري فعلي.
-            """
+            <div class="soft-card">
+                <div class="section-title">كيف يعمل النظام؟</div>
+                <div class="quick-info">
+                    1. يختار العميل الفرع والخدمة المناسبة له.<br>
+                    2. يرى فقط المواعيد المتاحة فعلًا حسب الموظفين والطاقة التشغيلية.<br>
+                    3. يحصل مباشرة على كود الحجز ورقم الدور واسم الموظف المخصص له.<br><br>
+                    الواجهة الجديدة تركز على السرعة والوضوح وتقليل الخطوات غير المهمة.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-        st.markdown("</div>", unsafe_allow_html=True)
-
     with right:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown('<div class="section-label">مؤشرات اليوم</div>', unsafe_allow_html=True)
-        st.metric("إجمالي الحجوزات", summary["total_bookings"])
-        st.metric("العملاء قيد الانتظار", summary["waiting_count"])
-        st.metric("الإيراد التقديري", f"{summary['estimated_revenue']:.0f} EGP")
-        st.markdown("</div>", unsafe_allow_html=True)
+        render_stat_cards(
+            [
+                ("العملاء بانتظار الخدمة", str(summary["waiting_count"])),
+                ("الإيراد التقديري اليوم", f"{summary['estimated_revenue']:.0f} EGP"),
+            ]
+        )
+
+    st.write("")
+    st.markdown('<div class="section-title">ابدأ في 3 خطوات</div>', unsafe_allow_html=True)
+    step_cols = st.columns(3)
+    steps = [
+        ("1. اختر الفرع", "كل فرع يعرض خدماته ومواعيد التشغيل الخاصة به بشكل مستقل."),
+        ("2. حدد الخدمة", "يتم عرض السعر والمدة تلقائيًا لمساعدة العميل على القرار بسرعة."),
+        ("3. أكد الموعد", "النظام يولد رقم الدور ويخصص موظفًا متاحًا تلقائيًا."),
+    ]
+    for col, (title, text) in zip(step_cols, steps):
+        with col:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <h4>{title}</h4>
+                    <p>{text}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.write("")
+    st.markdown('<div class="section-title">الفروع المتاحة</div>', unsafe_allow_html=True)
+    branch_cols = st.columns(len(branches))
+    for col, branch in zip(branch_cols, branches):
+        branch_services = get_services(branch["id"])
+        with col:
+            st.markdown(
+                f"""
+                <div class="branch-card">
+                    <h4>{branch["name"]}</h4>
+                    <p>النوع: {branch["category"]}</p>
+                    <p>الموقع: {branch["location"]}</p>
+                    <p>ساعات العمل: {branch["open_hour"]}:00 - {branch["close_hour"]}:00</p>
+                    <p>عدد الخدمات: {len(branch_services)}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 
 def render_booking_page() -> None:
+    render_page_banner(
+        "حجز سريع وواضح",
+        "قسم الحجز مصمم بحيث يرى العميل الفرع والخدمة والموعد الملائم قبل إدخال بياناته، مع ملخص واضح للحجز في نفس الصفحة.",
+        "تجربة الحجز",
+    )
     branches = get_branches()
     branch_options = {f"{row['name']} - {row['location']}": row for row in branches}
-    branch_label = st.selectbox("اختر الفرع", list(branch_options))
+    top_left, top_mid, top_right = st.columns([1.1, 1.2, 1])
+    with top_left:
+        branch_label = st.selectbox("الفرع", list(branch_options))
     selected_branch = branch_options[branch_label]
 
     services = get_services(selected_branch["id"])
@@ -709,10 +840,11 @@ def render_booking_page() -> None:
         f"{service['name']} | {service['duration_minutes']} دقيقة | {service['price']:.0f} EGP": service
         for service in services
     }
-    service_label = st.selectbox("اختر الخدمة", list(service_options))
+    with top_mid:
+        service_label = st.selectbox("الخدمة", list(service_options))
     selected_service = service_options[service_label]
-
-    selected_date = st.date_input("تاريخ الحجز", min_value=dt.date.today())
+    with top_right:
+        selected_date = st.date_input("التاريخ", min_value=dt.date.today())
     date_str = selected_date.isoformat()
     slots = build_available_slots(
         selected_branch["id"],
@@ -720,78 +852,142 @@ def render_booking_page() -> None:
         date_str,
         selected_service["duration_minutes"],
     )
+    staff_candidates = get_staff_for_service(selected_branch["id"], selected_service["id"])
 
-    with st.form("professional_booking_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            client_name = st.text_input("اسم العميل")
-        with col2:
-            client_phone = st.text_input("رقم الهاتف")
+    render_stat_cards(
+        [
+            ("السعر", f"{selected_service['price']:.0f} EGP"),
+            ("مدة الخدمة", f"{selected_service['duration_minutes']} دقيقة"),
+            ("المواعيد المتاحة", str(len(slots))),
+            ("الموظفون للخدمة", str(len(staff_candidates))),
+        ]
+    )
 
-        if slots:
-            booking_time = st.selectbox("المواعيد المتاحة", slots)
-        else:
-            booking_time = None
-            st.warning("لا توجد مواعيد متاحة لهذا اليوم مع هذه الخدمة.")
+    info_col, form_col = st.columns([0.95, 1.35])
+    with info_col:
+        st.markdown(
+            f"""
+            <div class="soft-card">
+                <div class="section-title">ملخص الاختيار</div>
+                <div class="quick-info">
+                    الفرع: <strong>{selected_branch["name"]}</strong><br>
+                    الموقع: <strong>{selected_branch["location"]}</strong><br>
+                    الخدمة: <strong>{selected_service["name"]}</strong><br>
+                    مدة الخدمة: <strong>{selected_service["duration_minutes"]} دقيقة</strong><br>
+                    السعر: <strong>{selected_service["price"]:.0f} EGP</strong><br>
+                    التاريخ: <strong>{date_str}</strong><br><br>
+                    يتم تخصيص الموظف تلقائيًا حسب أول شخص متاح للخدمة في الوقت المختار.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.write("")
+        st.markdown(
+            """
+            <div class="soft-card">
+                <div class="section-title">نصيحة لتجربة أفضل</div>
+                <div class="quick-info">
+                    اختر الموعد الأقرب إذا كان هدفك سرعة الإنجاز، أو اختر تاريخًا لاحقًا إذا أردت مرونة أكبر في الأوقات المتاحة.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        notes = st.text_area("ملاحظات إضافية", placeholder="اختياري: تفضيلات أو طلبات خاصة")
-        submitted = st.form_submit_button("تأكيد الحجز")
+    with form_col:
+        with st.form("professional_booking_form"):
+            st.markdown('<div class="section-title">بيانات العميل</div>', unsafe_allow_html=True)
+            col1, col2 = st.columns(2)
+            with col1:
+                client_name = st.text_input("الاسم الكامل")
+            with col2:
+                client_phone = st.text_input("رقم الهاتف")
 
-        if submitted:
-            if not client_name.strip() or not client_phone.strip():
-                st.error("يرجى إدخال الاسم ورقم الهاتف بشكل صحيح.")
-            elif booking_time is None:
-                st.error("اختر يومًا آخر أو خدمة أخرى لوجود ازدحام كامل.")
+            if slots:
+                booking_time = st.selectbox("اختر الموعد المتاح", slots)
             else:
-                success, message, details = create_booking(
-                    client_name,
-                    client_phone,
-                    selected_branch["id"],
-                    selected_service["id"],
-                    date_str,
-                    booking_time,
-                    notes,
-                )
-                if success:
-                    st.success(message)
-                    st.markdown(
-                        f"""
-                        <div class="glass-card">
-                            <div class="section-label">تفاصيل الحجز</div>
-                            <p>كود الحجز: <strong>{details['booking_code']}</strong></p>
-                            <p>رقم الدور: <strong>#{details['queue_number']}</strong></p>
-                            <p>الفرع: <strong>{details['branch_name']}</strong></p>
-                            <p>الخدمة: <strong>{details['service_name']}</strong></p>
-                            <p>الموظف المخصص: <strong>{details['staff_name']}</strong></p>
-                            <p>الموعد: <strong>{details['date']} - {details['time']}</strong></p>
-                            <p>السعر: <strong>{details['price']:.0f} EGP</strong></p>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-                    st.balloons()
+                booking_time = None
+                st.warning("لا توجد مواعيد متاحة لهذا اليوم مع هذه الخدمة.")
+
+            notes = st.text_area("ملاحظات إضافية", placeholder="مثال: يفضل موظف هادئ أو خدمة سريعة")
+            submitted = st.form_submit_button("تأكيد الحجز الآن")
+
+            if submitted:
+                if not client_name.strip() or not client_phone.strip():
+                    st.error("يرجى إدخال الاسم ورقم الهاتف بشكل صحيح.")
+                elif booking_time is None:
+                    st.error("اختر يومًا آخر أو خدمة أخرى لوجود ازدحام كامل.")
                 else:
-                    st.error(message)
+                    success, message, details = create_booking(
+                        client_name,
+                        client_phone,
+                        selected_branch["id"],
+                        selected_service["id"],
+                        date_str,
+                        booking_time,
+                        notes,
+                    )
+                    if success:
+                        st.success(message)
+                        st.markdown(
+                            f"""
+                            <div class="ticket-card">
+                                <div class="section-title">تم تأكيد الحجز</div>
+                                <div class="quick-info">
+                                    كود الحجز: <strong>{details['booking_code']}</strong><br>
+                                    رقم الدور: <strong>#{details['queue_number']}</strong><br>
+                                    الفرع: <strong>{details['branch_name']}</strong><br>
+                                    الخدمة: <strong>{details['service_name']}</strong><br>
+                                    الموظف المخصص: <strong>{details['staff_name']}</strong><br>
+                                    الموعد: <strong>{details['date']} - {details['time']}</strong><br>
+                                    السعر: <strong>{details['price']:.0f} EGP</strong>
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        st.balloons()
+                    else:
+                        st.error(message)
 
 
 def render_lookup_page() -> None:
-    st.markdown('<div class="section-label">استعلام عن حجوزات العميل</div>', unsafe_allow_html=True)
-    phone = st.text_input("أدخل رقم الهاتف المستخدم في الحجز")
+    render_page_banner(
+        "استعلام سريع عن حجوزات العميل",
+        "أدخل رقم الهاتف للوصول إلى كل الحجوزات السابقة والقادمة في عرض بسيط ومباشر.",
+        "متابعة العميل",
+    )
+    phone = st.text_input("رقم الهاتف المستخدم في الحجز")
     if st.button("بحث عن الحجوزات"):
         rows = get_customer_bookings(phone.strip())
         if not rows:
             st.warning("لا توجد حجوزات مرتبطة بهذا الرقم.")
             return
 
+        st.markdown(
+            f"""
+            <div class="soft-card">
+                <div class="section-title">نتيجة البحث</div>
+                <div class="quick-info">تم العثور على <strong>{len(rows)}</strong> حجز مرتبط بهذا الرقم.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.write("")
         for row in rows:
             st.markdown(
                 f"""
-                <div class="glass-card">
-                    <p><strong>{row['branch_name']}</strong> | {row['service_name']}</p>
-                    <p>كود الحجز: <strong>{row['booking_code']}</strong></p>
-                    <p>الموعد: <strong>{row['booking_date']} - {row['booking_time']}</strong></p>
-                    <p>الموظف: <strong>{row['staff_name']}</strong> | رقم الدور: <strong>#{row['queue_number']}</strong></p>
-                    <p>الحالة: <strong>{row['status']}</strong></p>
+                <div class="soft-card">
+                    <div class="section-title">{row['service_name']}</div>
+                    <div class="quick-info">
+                        الفرع: <strong>{row['branch_name']}</strong><br>
+                        كود الحجز: <strong>{row['booking_code']}</strong><br>
+                        الموعد: <strong>{row['booking_date']} - {row['booking_time']}</strong><br>
+                        الموظف: <strong>{row['staff_name']}</strong><br>
+                        رقم الدور: <strong>#{row['queue_number']}</strong><br>
+                        الحالة: <strong>{row['status']}</strong>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -799,30 +995,55 @@ def render_lookup_page() -> None:
 
 
 def render_queue_page() -> None:
+    render_page_banner(
+        "الطابور المباشر",
+        "تابع رقم الدور الحالي في كل فرع وشاهد أقرب العملاء في قائمة الانتظار بشكل واضح وسريع.",
+        "متابعة لحظية",
+    )
     branches = get_branches()
     branch_options = {row["name"]: row for row in branches}
-    selected_branch_name = st.selectbox("اختر الفرع لمتابعة الطابور", list(branch_options))
+    col1, col2 = st.columns([1.2, 1])
+    with col1:
+        selected_branch_name = st.selectbox("اختر الفرع", list(branch_options))
     branch = branch_options[selected_branch_name]
 
-    selected_date = st.date_input("تاريخ المتابعة", value=dt.date.today())
+    with col2:
+        selected_date = st.date_input("تاريخ المتابعة", value=dt.date.today())
     date_str = selected_date.isoformat()
     current_serving = get_queue_status(branch["id"], date_str)
     bookings = get_bookings_with_details(branch["id"], date_str)
     waiting = [row for row in bookings if row["queue_number"] >= current_serving]
 
-    st.metric("الدور الحالي", f"#{current_serving}")
-    st.metric("عدد الحجوزات اليوم", len(bookings))
-    st.metric("المتبقي في الانتظار", len(waiting))
+    render_stat_cards(
+        [
+            ("الدور الحالي", f"#{current_serving}"),
+            ("إجمالي الحجوزات", str(len(bookings))),
+            ("المتبقي في الانتظار", str(len(waiting))),
+        ]
+    )
 
     if waiting:
-        st.markdown('<div class="section-label">الطوابير القادمة</div>', unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div class="soft-card">
+                <div class="section-title">معلومة سريعة</div>
+                <div class="quick-info">
+                    الفرع الحالي: <strong>{branch["name"]}</strong><br>
+                    أول عميل في الانتظار يحمل رقم <strong>#{waiting[0]['queue_number']}</strong>.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.write("")
+        st.markdown('<div class="section-title">العملاء القادمون</div>', unsafe_allow_html=True)
         preview = [
             {
-                "Queue": f"#{row['queue_number']}",
-                "Client": row["customer_name"],
-                "Service": row["service_name"],
-                "Time": row["booking_time"],
-                "Staff": row["staff_name"],
+                "رقم الدور": f"#{row['queue_number']}",
+                "العميل": row["customer_name"],
+                "الخدمة": row["service_name"],
+                "الوقت": row["booking_time"],
+                "الموظف": row["staff_name"],
             }
             for row in waiting[:8]
         ]
@@ -832,75 +1053,150 @@ def render_queue_page() -> None:
 
 
 def render_admin_page() -> None:
-    st.markdown('<div class="section-label">لوحة إدارة الفرع</div>', unsafe_allow_html=True)
+    render_page_banner(
+        "لوحة إدارة التشغيل",
+        "واجهة إدارية أبسط لمتابعة الحجوزات اليومية وتحديث رقم الدور وتحميل التقرير بسرعة.",
+        "إدارة الفرع",
+    )
     if "admin_ok" not in st.session_state:
         st.session_state.admin_ok = False
 
     if not st.session_state.admin_ok:
-        pin = st.text_input("أدخل كود الإدارة", type="password")
-        if st.button("دخول"):
-            if pin == ADMIN_PIN:
-                st.session_state.admin_ok = True
-                st.success("تم فتح لوحة الإدارة.")
-            else:
-                st.error("الكود غير صحيح.")
-        st.caption("الكود الافتراضي للتجربة: 1234")
+        st.markdown(
+            """
+            <div class="soft-card">
+                <div class="section-title">تسجيل دخول الإدارة</div>
+                <div class="quick-info">أدخل كود الإدارة للوصول إلى أدوات التحكم الخاصة بالفروع.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        pin = st.text_input("كود الإدارة", type="password")
+        access_col, note_col = st.columns([1, 1.4])
+        with access_col:
+            if st.button("دخول لوحة الإدارة"):
+                if pin == ADMIN_PIN:
+                    st.session_state.admin_ok = True
+                    st.success("تم فتح لوحة الإدارة.")
+                else:
+                    st.error("الكود غير صحيح.")
+        with note_col:
+            st.info("الكود الافتراضي للتجربة: 1234")
         return
 
     branches = get_branches()
     branch_options = {row["name"]: row for row in branches}
-    selected_branch_name = st.selectbox("الفرع", list(branch_options), key="admin_branch")
+    top1, top2, top3 = st.columns([1.2, 1, 0.8])
+    with top1:
+        selected_branch_name = st.selectbox("اختر الفرع", list(branch_options), key="admin_branch")
     branch = branch_options[selected_branch_name]
-    selected_date = st.date_input("تاريخ التشغيل", value=dt.date.today(), key="admin_date")
+    with top2:
+        selected_date = st.date_input("تاريخ التشغيل", value=dt.date.today(), key="admin_date")
     date_str = selected_date.isoformat()
+    with top3:
+        if st.button("تسجيل الخروج"):
+            st.session_state.admin_ok = False
+            st.rerun()
 
     bookings = get_bookings_with_details(branch["id"], date_str)
     current_serving = get_queue_status(branch["id"], date_str)
     estimated_revenue = sum(row["service_price"] for row in bookings)
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("إجمالي حجوزات الفرع", len(bookings))
-    with col2:
-        st.metric("الدور الحالي", f"#{current_serving}")
-    with col3:
-        st.metric("إيراد تقديري", f"{estimated_revenue:.0f} EGP")
+    render_stat_cards(
+        [
+            ("حجوزات الفرع", str(len(bookings))),
+            ("الدور الحالي", f"#{current_serving}"),
+            ("الإيراد التقديري", f"{estimated_revenue:.0f} EGP"),
+        ]
+    )
 
-    with st.expander("تحديث الدور الحالي", expanded=True):
+    tab_summary, tab_queue, tab_bookings = st.tabs(
+        ["ملخص التشغيل", "إدارة الطابور", "حجوزات اليوم"]
+    )
+
+    with tab_summary:
+        st.markdown(
+            f"""
+            <div class="soft-card">
+                <div class="section-title">ملخص الفرع</div>
+                <div class="quick-info">
+                    الفرع: <strong>{branch["name"]}</strong><br>
+                    الموقع: <strong>{branch["location"]}</strong><br>
+                    النوع: <strong>{branch["category"]}</strong><br>
+                    ساعات العمل: <strong>{branch["open_hour"]}:00 - {branch["close_hour"]}:00</strong><br>
+                    تاريخ التشغيل: <strong>{date_str}</strong>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.write("")
+        if bookings:
+            next_customer = next(
+                (row for row in bookings if row["queue_number"] >= current_serving),
+                bookings[0],
+            )
+            st.markdown(
+                f"""
+                <div class="ticket-card">
+                    <div class="section-title">أقرب عميل للتجهيز</div>
+                    <div class="quick-info">
+                        العميل: <strong>{next_customer["customer_name"]}</strong><br>
+                        الخدمة: <strong>{next_customer["service_name"]}</strong><br>
+                        الوقت: <strong>{next_customer["booking_time"]}</strong><br>
+                        رقم الدور: <strong>#{next_customer["queue_number"]}</strong>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.info("لا توجد حجوزات حتى الآن لهذا التاريخ.")
+
+    with tab_queue:
+        st.markdown(
+            """
+            <div class="soft-card">
+                <div class="section-title">تحديث رقم الدور</div>
+                <div class="quick-info">حدّث الرقم الحالي بمجرد انتقال الخدمة للعميل التالي.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         next_turn = st.number_input(
             "رقم الدور الذي يتم خدمته الآن",
             min_value=1,
             max_value=max(len(bookings) + 5, 10),
             value=max(current_serving, 1),
         )
-        if st.button("حفظ التحديث"):
+        if st.button("حفظ تحديث الدور"):
             set_queue_status(branch["id"], date_str, int(next_turn))
             st.success(f"تم تحديث الدور الحالي إلى #{int(next_turn)}.")
 
-    st.markdown('<div class="section-label">حجوزات اليوم</div>', unsafe_allow_html=True)
-    if bookings:
-        table = [
-            {
-                "Queue": row["queue_number"],
-                "Code": row["booking_code"],
-                "Client": row["customer_name"],
-                "Phone": row["customer_phone"],
-                "Service": row["service_name"],
-                "Staff": row["staff_name"],
-                "Time": row["booking_time"],
-                "Status": row["status"],
-            }
-            for row in bookings
-        ]
-        st.dataframe(table, use_container_width=True, hide_index=True)
-        st.download_button(
-            "تحميل تقرير CSV",
-            data=to_csv(bookings),
-            file_name=f"bookings_{branch['id']}_{date_str}.csv",
-            mime="text/csv",
-        )
-    else:
-        st.info("لا توجد حجوزات لهذا الفرع في التاريخ المحدد.")
+    with tab_bookings:
+        if bookings:
+            table = [
+                {
+                    "رقم الدور": row["queue_number"],
+                    "كود الحجز": row["booking_code"],
+                    "العميل": row["customer_name"],
+                    "الهاتف": row["customer_phone"],
+                    "الخدمة": row["service_name"],
+                    "الموظف": row["staff_name"],
+                    "الوقت": row["booking_time"],
+                    "الحالة": row["status"],
+                }
+                for row in bookings
+            ]
+            st.dataframe(table, use_container_width=True, hide_index=True)
+            st.download_button(
+                "تحميل تقرير CSV",
+                data=to_csv(bookings),
+                file_name=f"bookings_{branch['id']}_{date_str}.csv",
+                mime="text/csv",
+            )
+        else:
+            st.info("لا توجد حجوزات لهذا الفرع في التاريخ المحدد.")
 
 
 def main() -> None:
@@ -909,13 +1205,13 @@ def main() -> None:
     seed_demo_data()
     inject_style()
 
-    st.title("✂️ Glow & Groom Booking Hub")
-    st.caption("Professional booking, queue tracking, and branch operations in one Streamlit app.")
+    st.title("✂️ منصة Glow & Groom")
+    st.caption("نظام حجز صالونات عربي بتجربة أوضح، وتنقل أسهل، ولوحة تشغيل أبسط.")
 
     with st.sidebar:
-        st.header("Navigation")
+        st.header("القائمة الرئيسية")
         page = st.radio(
-            "اختر القسم",
+            "انتقل إلى",
             [
                 "الرئيسية",
                 "احجز الآن",
@@ -924,7 +1220,18 @@ def main() -> None:
                 "لوحة الإدارة",
             ],
         )
-        st.info("النظام يحفظ البيانات محليًا داخل SQLite ويمكن تطويره لاحقًا لتعدد الفروع والمستخدمين.")
+        st.markdown("---")
+        st.markdown(
+            """
+            **ماذا يقدم النظام؟**
+
+            - حجز سريع بخطوات قليلة
+            - عرض مواعيد متاحة فعلية
+            - متابعة الدور الحالي
+            - لوحة إدارة سهلة
+            """
+        )
+        st.info("يتم حفظ البيانات محليًا داخل SQLite، ويمكن تطوير التطبيق لاحقًا ليدعم تعدد المستخدمين والفروع.")
 
     if page == "الرئيسية":
         render_home()
