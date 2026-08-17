@@ -3,13 +3,46 @@ import datetime as dt
 import io
 import sqlite3
 from pathlib import Path
+from urllib.parse import quote
 
+import pandas as pd
 import streamlit as st
 
 
 APP_TITLE = "Glow & Groom Booking Hub"
 DB_PATH = Path(__file__).with_name("salon_booking.db")
 ADMIN_PIN = "1234"
+
+
+def normalize_phone(phone: str) -> str:
+    digits = "".join(ch for ch in (phone or "") if ch.isdigit())
+    return digits if len(digits) >= 10 else (phone or "").strip()
+
+
+def is_valid_phone(phone: str) -> bool:
+    digits = "".join(ch for ch in (phone or "") if ch.isdigit())
+    return 10 <= len(digits) <= 15
+
+
+def get_language() -> str:
+    return st.session_state.get("lang", "ar")
+
+
+def text(ar: str, en: str) -> str:
+    return ar if get_language() == "ar" else en
+
+
+def localized_value(ar_value: str | None, en_value: str | None) -> str:
+    if get_language() == "ar":
+        return ar_value or en_value or ""
+    return en_value or ar_value or ""
+
+
+def image_url(prompt: str, image_size: str = "landscape_4_3") -> str:
+    return (
+        "https://coresg-normal.trae.ai/api/ide/v1/text_to_image"
+        f"?prompt={quote(prompt)}&image_size={image_size}"
+    )
 
 
 def connect_db() -> sqlite3.Connection:
@@ -90,6 +123,86 @@ def init_db() -> None:
                 UNIQUE(branch_id, queue_date),
                 FOREIGN KEY(branch_id) REFERENCES branches(id)
             );
+
+            CREATE TABLE IF NOT EXISTS governorates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                country_code TEXT NOT NULL,
+                name_ar TEXT NOT NULL,
+                name_en TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS areas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                governorate_id INTEGER NOT NULL,
+                name_ar TEXT NOT NULL,
+                name_en TEXT NOT NULL,
+                FOREIGN KEY(governorate_id) REFERENCES governorates(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS provider_profiles (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                branch_id INTEGER,
+                provider_type TEXT NOT NULL,
+                service_mode TEXT NOT NULL,
+                display_name_ar TEXT NOT NULL,
+                display_name_en TEXT NOT NULL,
+                tagline_ar TEXT NOT NULL,
+                tagline_en TEXT NOT NULL,
+                bio_ar TEXT NOT NULL,
+                bio_en TEXT NOT NULL,
+                governorate_id INTEGER NOT NULL,
+                area_id INTEGER NOT NULL,
+                address_ar TEXT NOT NULL,
+                address_en TEXT NOT NULL,
+                lat REAL NOT NULL,
+                lng REAL NOT NULL,
+                chat_enabled INTEGER NOT NULL DEFAULT 1,
+                featured INTEGER NOT NULL DEFAULT 0,
+                verified INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY(branch_id) REFERENCES branches(id),
+                FOREIGN KEY(governorate_id) REFERENCES governorates(id),
+                FOREIGN KEY(area_id) REFERENCES areas(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS portfolio_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                provider_id INTEGER NOT NULL,
+                title_ar TEXT NOT NULL,
+                title_en TEXT NOT NULL,
+                category TEXT NOT NULL,
+                image_url TEXT NOT NULL,
+                FOREIGN KEY(provider_id) REFERENCES provider_profiles(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS provider_reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                provider_id INTEGER NOT NULL,
+                reviewer_name TEXT NOT NULL,
+                rating INTEGER NOT NULL,
+                comment TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(provider_id) REFERENCES provider_profiles(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS staff_reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                staff_id INTEGER NOT NULL,
+                reviewer_name TEXT NOT NULL,
+                rating INTEGER NOT NULL,
+                comment TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(staff_id) REFERENCES staff(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                provider_id INTEGER NOT NULL,
+                sender_role TEXT NOT NULL,
+                sender_name TEXT NOT NULL,
+                message_text TEXT NOT NULL,
+                sent_at TEXT NOT NULL,
+                FOREIGN KEY(provider_id) REFERENCES provider_profiles(id)
+            );
             """
         )
 
@@ -97,119 +210,442 @@ def init_db() -> None:
 def seed_demo_data() -> None:
     with connect_db() as conn:
         branch_count = conn.execute("SELECT COUNT(*) FROM branches").fetchone()[0]
-        if branch_count:
-            return
+        if branch_count == 0:
+            branches = [
+                ("Glow Lounge - Nasr City", "Beauty & Hair", "Nasr City", 10, 22),
+                ("Royal Fade - Sheikh Zayed", "Barber Shop", "Sheikh Zayed", 12, 23),
+                ("Pearl Beauty Studio - New Cairo", "Beauty Center", "New Cairo", 11, 21),
+            ]
 
-        branches = [
-            ("Glow Lounge - Nasr City", "Beauty & Hair", "Nasr City", 10, 22),
-            ("Royal Fade - Sheikh Zayed", "Barber Shop", "Sheikh Zayed", 12, 23),
-            ("Pearl Beauty Studio - New Cairo", "Beauty Center", "New Cairo", 11, 21),
-        ]
-
-        branch_ids = []
-        for branch in branches:
-            cursor = conn.execute(
-                """
-                INSERT INTO branches (name, category, location, open_hour, close_hour)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                branch,
-            )
-            branch_ids.append(cursor.lastrowid)
-
-        services_map = {
-            branch_ids[0]: [
-                ("Haircut & Styling", 60, 220),
-                ("Hair Color Refresh", 90, 450),
-                ("Nail Care Session", 45, 180),
-                ("Skin Glow Treatment", 60, 300),
-            ],
-            branch_ids[1]: [
-                ("Classic Haircut", 45, 160),
-                ("Beard Design", 30, 110),
-                ("Premium Grooming", 60, 260),
-                ("Kids Cut", 30, 90),
-            ],
-            branch_ids[2]: [
-                ("Bridal Makeup Trial", 90, 550),
-                ("Facial Therapy", 60, 320),
-                ("Manicure & Pedicure", 75, 280),
-                ("Hair Spa", 60, 340),
-            ],
-        }
-
-        service_ids = {}
-        for branch_id, services in services_map.items():
-            service_ids[branch_id] = []
-            for service in services:
+            branch_ids = []
+            for branch in branches:
                 cursor = conn.execute(
                     """
-                    INSERT INTO services (branch_id, name, duration_minutes, price)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO branches (name, category, location, open_hour, close_hour)
+                    VALUES (?, ?, ?, ?, ?)
                     """,
-                    (branch_id, *service),
+                    branch,
                 )
-                service_ids[branch_id].append(cursor.lastrowid)
+                branch_ids.append(cursor.lastrowid)
 
-        staff_map = {
-            branch_ids[0]: [
-                ("Maya Hassan", "Senior Stylist"),
-                ("Lina Adel", "Color Specialist"),
-                ("Sara Nabil", "Skin Therapist"),
-            ],
-            branch_ids[1]: [
-                ("Omar Essam", "Master Barber"),
-                ("Youssef Ashraf", "Beard Artist"),
-                ("Karim Samy", "Grooming Expert"),
-            ],
-            branch_ids[2]: [
-                ("Nadine Wael", "Makeup Artist"),
-                ("Salma Tarek", "Hair Specialist"),
-                ("Heba Sherif", "Beauty Therapist"),
-            ],
-        }
+            services_map = {
+                branch_ids[0]: [
+                    ("Haircut & Styling", 60, 220),
+                    ("Hair Color Refresh", 90, 450),
+                    ("Nail Care Session", 45, 180),
+                    ("Skin Glow Treatment", 60, 300),
+                ],
+                branch_ids[1]: [
+                    ("Classic Haircut", 45, 160),
+                    ("Beard Design", 30, 110),
+                    ("Premium Grooming", 60, 260),
+                    ("Kids Cut", 30, 90),
+                ],
+                branch_ids[2]: [
+                    ("Bridal Makeup Trial", 90, 550),
+                    ("Facial Therapy", 60, 320),
+                    ("Manicure & Pedicure", 75, 280),
+                    ("Hair Spa", 60, 340),
+                ],
+            }
 
-        staff_ids = {}
-        for branch_id, employees in staff_map.items():
-            staff_ids[branch_id] = []
-            for employee in employees:
+            service_ids = {}
+            for branch_id, services in services_map.items():
+                service_ids[branch_id] = []
+                for service in services:
+                    cursor = conn.execute(
+                        """
+                        INSERT INTO services (branch_id, name, duration_minutes, price)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (branch_id, *service),
+                    )
+                    service_ids[branch_id].append(cursor.lastrowid)
+
+            staff_map = {
+                branch_ids[0]: [
+                    ("Maya Hassan", "Senior Stylist"),
+                    ("Lina Adel", "Color Specialist"),
+                    ("Sara Nabil", "Skin Therapist"),
+                ],
+                branch_ids[1]: [
+                    ("Omar Essam", "Master Barber"),
+                    ("Youssef Ashraf", "Beard Artist"),
+                    ("Karim Samy", "Grooming Expert"),
+                ],
+                branch_ids[2]: [
+                    ("Nadine Wael", "Makeup Artist"),
+                    ("Salma Tarek", "Hair Specialist"),
+                    ("Heba Sherif", "Beauty Therapist"),
+                ],
+            }
+
+            staff_ids = {}
+            for branch_id, employees in staff_map.items():
+                staff_ids[branch_id] = []
+                for employee in employees:
+                    cursor = conn.execute(
+                        """
+                        INSERT INTO staff (branch_id, name, title)
+                        VALUES (?, ?, ?)
+                        """,
+                        (branch_id, *employee),
+                    )
+                    staff_ids[branch_id].append(cursor.lastrowid)
+
+            mappings = {
+                branch_ids[0]: {
+                    staff_ids[branch_ids[0]][0]: service_ids[branch_ids[0]][0:2],
+                    staff_ids[branch_ids[0]][1]: service_ids[branch_ids[0]][1:3],
+                    staff_ids[branch_ids[0]][2]: [service_ids[branch_ids[0]][2], service_ids[branch_ids[0]][3]],
+                },
+                branch_ids[1]: {
+                    staff_ids[branch_ids[1]][0]: [service_ids[branch_ids[1]][0], service_ids[branch_ids[1]][2]],
+                    staff_ids[branch_ids[1]][1]: [service_ids[branch_ids[1]][1], service_ids[branch_ids[1]][2]],
+                    staff_ids[branch_ids[1]][2]: service_ids[branch_ids[1]],
+                },
+                branch_ids[2]: {
+                    staff_ids[branch_ids[2]][0]: [service_ids[branch_ids[2]][0]],
+                    staff_ids[branch_ids[2]][1]: [service_ids[branch_ids[2]][3], service_ids[branch_ids[2]][2]],
+                    staff_ids[branch_ids[2]][2]: [service_ids[branch_ids[2]][1], service_ids[branch_ids[2]][2]],
+                },
+            }
+
+            for branch_mapping in mappings.values():
+                for staff_id, service_list in branch_mapping.items():
+                    for service_id in service_list:
+                        conn.execute(
+                            """
+                            INSERT INTO staff_services (staff_id, service_id)
+                            VALUES (?, ?)
+                            """,
+                            (staff_id, service_id),
+                        )
+
+        governorate_count = conn.execute("SELECT COUNT(*) FROM governorates").fetchone()[0]
+        if governorate_count == 0:
+            governorates = [
+                ("EG", "القاهرة", "Cairo"),
+                ("EG", "الجيزة", "Giza"),
+                ("EG", "الإسكندرية", "Alexandria"),
+            ]
+            governorate_ids = {}
+            for gov in governorates:
                 cursor = conn.execute(
                     """
-                    INSERT INTO staff (branch_id, name, title)
+                    INSERT INTO governorates (country_code, name_ar, name_en)
                     VALUES (?, ?, ?)
                     """,
-                    (branch_id, *employee),
+                    gov,
                 )
-                staff_ids[branch_id].append(cursor.lastrowid)
+                governorate_ids[gov[2]] = cursor.lastrowid
 
-        mappings = {
-            branch_ids[0]: {
-                staff_ids[branch_ids[0]][0]: service_ids[branch_ids[0]][0:2],
-                staff_ids[branch_ids[0]][1]: service_ids[branch_ids[0]][1:3],
-                staff_ids[branch_ids[0]][2]: [service_ids[branch_ids[0]][2], service_ids[branch_ids[0]][3]],
-            },
-            branch_ids[1]: {
-                staff_ids[branch_ids[1]][0]: [service_ids[branch_ids[1]][0], service_ids[branch_ids[1]][2]],
-                staff_ids[branch_ids[1]][1]: [service_ids[branch_ids[1]][1], service_ids[branch_ids[1]][2]],
-                staff_ids[branch_ids[1]][2]: service_ids[branch_ids[1]],
-            },
-            branch_ids[2]: {
-                staff_ids[branch_ids[2]][0]: [service_ids[branch_ids[2]][0]],
-                staff_ids[branch_ids[2]][1]: [service_ids[branch_ids[2]][3], service_ids[branch_ids[2]][2]],
-                staff_ids[branch_ids[2]][2]: [service_ids[branch_ids[2]][1], service_ids[branch_ids[2]][2]],
-            },
-        }
+            areas = [
+                (governorate_ids["Cairo"], "مدينة نصر", "Nasr City"),
+                (governorate_ids["Cairo"], "التجمع الخامس", "New Cairo"),
+                (governorate_ids["Giza"], "الشيخ زايد", "Sheikh Zayed"),
+                (governorate_ids["Giza"], "الدقي", "Dokki"),
+                (governorate_ids["Alexandria"], "سموحة", "Smouha"),
+                (governorate_ids["Alexandria"], "سان ستيفانو", "San Stefano"),
+            ]
+            for area in areas:
+                conn.execute(
+                    """
+                    INSERT INTO areas (governorate_id, name_ar, name_en)
+                    VALUES (?, ?, ?)
+                    """,
+                    area,
+                )
 
-        for branch_mapping in mappings.values():
-            for staff_id, service_list in branch_mapping.items():
-                for service_id in service_list:
+        provider_count = conn.execute("SELECT COUNT(*) FROM provider_profiles").fetchone()[0]
+        if provider_count == 0:
+            branches = conn.execute("SELECT * FROM branches ORDER BY id").fetchall()
+            areas = {
+                row["name_en"]: row["id"]
+                for row in conn.execute("SELECT id, name_en FROM areas").fetchall()
+            }
+            governorates = {
+                row["name_en"]: row["id"]
+                for row in conn.execute("SELECT id, name_en FROM governorates").fetchall()
+            }
+
+            branch_profiles = [
+                (
+                    branches[0]["id"],
+                    "salon",
+                    "in_salon",
+                    "جلو لاونج",
+                    "Glow Lounge",
+                    "صالون متكامل للعناية بالشعر والبشرة والأظافر.",
+                    "A full-service destination for hair, skin, and nail care.",
+                    "فريق محترف وتجربة راقية مع خدمات تجميل متكاملة ومواعيد منظمة.",
+                    "A polished salon team with premium beauty services and smooth booking flows.",
+                    governorates["Cairo"],
+                    areas["Nasr City"],
+                    "مدينة نصر - القاهرة",
+                    "Nasr City, Cairo",
+                    30.0626,
+                    31.3300,
+                    1,
+                    1,
+                    1,
+                ),
+                (
+                    branches[1]["id"],
+                    "barbershop",
+                    "in_salon",
+                    "رويال فيد",
+                    "Royal Fade",
+                    "خبرة عالية في قصات الشعر والذقن والـ grooming.",
+                    "Premium barbering with clean fades and grooming care.",
+                    "صالون رجالي عصري مناسب للحجوزات السريعة والزيارات اليومية.",
+                    "A modern barber destination built for fast appointments and daily visits.",
+                    governorates["Giza"],
+                    areas["Sheikh Zayed"],
+                    "الشيخ زايد - الجيزة",
+                    "Sheikh Zayed, Giza",
+                    30.0131,
+                    30.9754,
+                    1,
+                    1,
+                    1,
+                ),
+                (
+                    branches[2]["id"],
+                    "beauty_center",
+                    "in_salon",
+                    "بيرل بيوتي ستوديو",
+                    "Pearl Beauty Studio",
+                    "مركز متخصص في المكياج والعناية والجلسات المميزة.",
+                    "A beauty studio for makeup sessions and signature care.",
+                    "يقدم جلسات متقدمة للعناية والجمال مع فريق نسائي متخصص.",
+                    "Offers premium beauty treatments with a specialized female team.",
+                    governorates["Cairo"],
+                    areas["New Cairo"],
+                    "التجمع الخامس - القاهرة",
+                    "New Cairo, Cairo",
+                    30.0094,
+                    31.4204,
+                    1,
+                    1,
+                    1,
+                ),
+                (
+                    None,
+                    "freelancer_barber",
+                    "home_service",
+                    "أحمد الحلاق الشخصي",
+                    "Ahmed Personal Barber",
+                    "حلاق متنقل لقص الشعر والذقن في المنزل.",
+                    "Mobile barber for home haircut and beard styling.",
+                    "يصل إلى العميل في المناطق المختارة ويقدم خدمة سريعة ومرنة.",
+                    "Travels to clients in selected areas with flexible grooming sessions.",
+                    governorates["Giza"],
+                    areas["Dokki"],
+                    "الدقي - الجيزة",
+                    "Dokki, Giza",
+                    30.0384,
+                    31.2101,
+                    1,
+                    1,
+                    1,
+                ),
+                (
+                    None,
+                    "freelancer_beauty",
+                    "both",
+                    "سارة بيوتي آرتست",
+                    "Sara Beauty Artist",
+                    "خبيرة تجميل شخصية للمناسبات والخدمات المنزلية.",
+                    "Personal beauty artist for events and home visits.",
+                    "تقدم جلسات مكياج وعناية شخصية ويمكن الحجز معها للمناسبات الخاصة.",
+                    "Provides makeup and beauty sessions for private appointments and events.",
+                    governorates["Alexandria"],
+                    areas["Smouha"],
+                    "سموحة - الإسكندرية",
+                    "Smouha, Alexandria",
+                    31.2156,
+                    29.9553,
+                    1,
+                    1,
+                    1,
+                ),
+            ]
+
+            for profile in branch_profiles:
+                conn.execute(
+                    """
+                    INSERT INTO provider_profiles (
+                        branch_id, provider_type, service_mode, display_name_ar, display_name_en,
+                        tagline_ar, tagline_en, bio_ar, bio_en, governorate_id, area_id,
+                        address_ar, address_en, lat, lng, chat_enabled, featured, verified
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    profile,
+                )
+
+        portfolio_count = conn.execute("SELECT COUNT(*) FROM portfolio_items").fetchone()[0]
+        if portfolio_count == 0:
+            providers = conn.execute("SELECT id, display_name_en FROM provider_profiles").fetchall()
+            portfolio_seed = {
+                "Glow Lounge": [
+                    (
+                        "لوك شعر ناعم وانسيابي",
+                        "Soft layered hairstyle",
+                        "hair",
+                        image_url(
+                            "luxury beauty salon portfolio photo, female client with glossy layered hairstyle, soft studio lighting, realistic, editorial quality",
+                            "portrait_4_3",
+                        ),
+                    ),
+                    (
+                        "جلسة عناية بالبشرة",
+                        "Radiant skin treatment",
+                        "skin",
+                        image_url(
+                            "professional skincare treatment in elegant salon room, glowing skin result, realistic website portfolio image",
+                            "portrait_4_3",
+                        ),
+                    ),
+                ],
+                "Royal Fade": [
+                    (
+                        "فيد احترافي",
+                        "Sharp skin fade",
+                        "barber",
+                        image_url(
+                            "modern barber shop portfolio, sharp skin fade haircut on male client, realistic detail, premium lighting",
+                            "portrait_4_3",
+                        ),
+                    ),
+                    (
+                        "تنسيق ذقن كلاسيكي",
+                        "Classic beard shaping",
+                        "barber",
+                        image_url(
+                            "barber grooming portfolio image, classic beard shaping and sharp haircut, realistic professional shot",
+                            "portrait_4_3",
+                        ),
+                    ),
+                ],
+                "Pearl Beauty Studio": [
+                    (
+                        "مكياج مناسبات راق",
+                        "Elegant bridal makeup",
+                        "makeup",
+                        image_url(
+                            "beauty studio portfolio, elegant bridal makeup close-up, realistic, premium editorial style",
+                            "portrait_4_3",
+                        ),
+                    ),
+                    (
+                        "جلسة عناية متقدمة",
+                        "Premium beauty care session",
+                        "beauty",
+                        image_url(
+                            "beauty center portfolio photo, premium facial and beauty care room, realistic website image",
+                            "portrait_4_3",
+                        ),
+                    ),
+                ],
+                "Ahmed Personal Barber": [
+                    (
+                        "خدمة منزلية مريحة",
+                        "At-home grooming setup",
+                        "home_service",
+                        image_url(
+                            "mobile barber at home service portfolio image, professional grooming setup in client home, realistic",
+                            "portrait_4_3",
+                        ),
+                    ),
+                ],
+                "Sara Beauty Artist": [
+                    (
+                        "مكياج شخصي متنقل",
+                        "Mobile makeup session",
+                        "makeup",
+                        image_url(
+                            "personal beauty artist portfolio, mobile makeup service for event, realistic glamorous portrait",
+                            "portrait_4_3",
+                        ),
+                    ),
+                ],
+            }
+
+            for provider in providers:
+                for item in portfolio_seed.get(provider["display_name_en"], []):
                     conn.execute(
                         """
-                        INSERT INTO staff_services (staff_id, service_id)
-                        VALUES (?, ?)
+                        INSERT INTO portfolio_items (provider_id, title_ar, title_en, category, image_url)
+                        VALUES (?, ?, ?, ?, ?)
                         """,
-                        (staff_id, service_id),
+                        (provider["id"], *item),
                     )
+
+        review_count = conn.execute("SELECT COUNT(*) FROM provider_reviews").fetchone()[0]
+        if review_count == 0:
+            provider_names = {
+                row["display_name_en"]: row["id"]
+                for row in conn.execute("SELECT id, display_name_en FROM provider_profiles").fetchall()
+            }
+            provider_reviews = [
+                (provider_names["Glow Lounge"], "Nour", 5, "Great service quality and smooth booking experience."),
+                (provider_names["Glow Lounge"], "Mariam", 4, "Friendly staff and organized timing."),
+                (provider_names["Royal Fade"], "Mostafa", 5, "Excellent barber skills and neat results."),
+                (provider_names["Pearl Beauty Studio"], "Hana", 5, "Beautiful makeup result and professional team."),
+                (provider_names["Ahmed Personal Barber"], "Karim", 4, "Convenient home service and good timing."),
+                (provider_names["Sara Beauty Artist"], "Yasmin", 5, "Professional artist with great portfolio."),
+            ]
+            created_at = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            for review in provider_reviews:
+                conn.execute(
+                    """
+                    INSERT INTO provider_reviews (provider_id, reviewer_name, rating, comment, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (*review, created_at),
+                )
+
+        staff_review_count = conn.execute("SELECT COUNT(*) FROM staff_reviews").fetchone()[0]
+        if staff_review_count == 0:
+            staff_rows = conn.execute("SELECT id, name FROM staff").fetchall()
+            ratings_by_name = {
+                "Maya Hassan": [("Rana", 5, "Excellent styling and attention to detail.")],
+                "Omar Essam": [("Ali", 5, "One of the best fades I tried.")],
+                "Nadine Wael": [("Dina", 5, "Amazing makeup artist and very professional.")],
+            }
+            created_at = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            for staff_row in staff_rows:
+                for item in ratings_by_name.get(staff_row["name"], []):
+                    conn.execute(
+                        """
+                        INSERT INTO staff_reviews (staff_id, reviewer_name, rating, comment, created_at)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (staff_row["id"], item[0], item[1], item[2], created_at),
+                    )
+
+        message_count = conn.execute("SELECT COUNT(*) FROM chat_messages").fetchone()[0]
+        if message_count == 0:
+            provider_names = {
+                row["display_name_en"]: row["id"]
+                for row in conn.execute("SELECT id, display_name_en FROM provider_profiles").fetchall()
+            }
+            now = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            seed_messages = [
+                (provider_names["Glow Lounge"], "client", "Mona", "Is there a late evening slot this week?", now),
+                (provider_names["Glow Lounge"], "provider", "Glow Lounge Team", "Yes, there are evening slots available on Thursday.", now),
+                (provider_names["Sara Beauty Artist"], "client", "Laila", "Do you offer bridal trial sessions?", now),
+            ]
+            for message in seed_messages:
+                conn.execute(
+                    """
+                    INSERT INTO chat_messages (provider_id, sender_role, sender_name, message_text, sent_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    message,
+                )
 
 
 def fetch_all(query: str, params: tuple = ()) -> list[sqlite3.Row]:
@@ -276,6 +712,12 @@ def get_bookings_with_details(branch_id: int | None = None, date_str: str | None
 
 
 def get_customer_bookings(phone: str) -> list[sqlite3.Row]:
+    normalized_phone = normalize_phone(phone)
+    if not normalized_phone:
+        return []
+
+    raw_phone = normalized_phone
+    search_phone = normalized_phone if is_valid_phone(normalized_phone) else phone.strip()
     return fetch_all(
         """
         SELECT
@@ -292,10 +734,10 @@ def get_customer_bookings(phone: str) -> list[sqlite3.Row]:
         JOIN branches ON bookings.branch_id = branches.id
         JOIN services ON bookings.service_id = services.id
         JOIN staff ON bookings.staff_id = staff.id
-        WHERE customers.phone = ?
+        WHERE customers.phone = ? OR customers.phone = ?
         ORDER BY bookings.booking_date DESC, bookings.booking_time DESC
         """,
-        (phone,),
+        (search_phone, raw_phone),
     )
 
 
@@ -391,10 +833,11 @@ def build_available_slots(branch_id: int, service_id: int, date_str: str, durati
 
 
 def upsert_customer(name: str, phone: str) -> int:
+    cleaned_phone = normalize_phone(phone)
     with connect_db() as conn:
         customer = conn.execute(
             "SELECT id FROM customers WHERE phone = ?",
-            (phone,),
+            (cleaned_phone,),
         ).fetchone()
         if customer:
             conn.execute(
@@ -405,7 +848,7 @@ def upsert_customer(name: str, phone: str) -> int:
 
         cursor = conn.execute(
             "INSERT INTO customers (full_name, phone) VALUES (?, ?)",
-            (name, phone),
+            (name, cleaned_phone),
         )
         return cursor.lastrowid
 
@@ -419,10 +862,32 @@ def create_booking(
     time_str: str,
     notes: str = "",
 ) -> tuple[bool, str, dict]:
+    cleaned_name = (name or "").strip()
+    cleaned_phone = normalize_phone(phone)
+    if not cleaned_name or not is_valid_phone(cleaned_phone):
+        return False, "يرجى إدخال اسم صحيح ورقم هاتف صحيح.", {}
+
+    try:
+        selected_date = dt.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return False, "تاريخ الحجز غير صالح.", {}
+
+    if selected_date < dt.date.today():
+        return False, "لا يمكن حجز موعد في تاريخ سابق.", {}
+
+    branch = fetch_one("SELECT id, name FROM branches WHERE id = ?", (branch_id,))
     service = fetch_one(
-        "SELECT name, duration_minutes, price FROM services WHERE id = ?",
+        "SELECT id, name, duration_minutes, price FROM services WHERE id = ?",
         (service_id,),
     )
+    if branch is None or service is None:
+        return False, "الفرع أو الخدمة المختارة غير موجودة.", {}
+
+    try:
+        parse_slot(date_str, time_str)
+    except ValueError:
+        return False, "وقت الحجز غير صالح.", {}
+
     available_staff = available_staff_for_slot(
         branch_id,
         service_id,
@@ -434,7 +899,7 @@ def create_booking(
         return False, "هذا الموعد لم يعد متاحًا، اختر وقتًا آخر.", {}
 
     assigned_staff = available_staff[0]
-    customer_id = upsert_customer(name.strip(), phone.strip())
+    customer_id = upsert_customer(cleaned_name, cleaned_phone)
 
     day_count = fetch_one(
         "SELECT COUNT(*) AS total FROM bookings WHERE branch_id = ? AND booking_date = ?",
@@ -467,7 +932,6 @@ def create_booking(
             ),
         )
 
-    branch = fetch_one("SELECT name FROM branches WHERE id = ?", (branch_id,))
     if get_queue_status(branch_id, date_str) == 0:
         set_queue_status(branch_id, date_str, 1)
 
